@@ -6,24 +6,24 @@
 	</p>
 </div>
 
-Since Node is single threaded, it doesn't automatically take advantage of a multi-core CPU. Clustering allows your app to spawn worker processes each running their own thread on a core, while all sharing the same server port. Node intelligently distributes new connections across the workers in a round-robin fashion, ensuring work load is balanced. kamisama abstracts this boilerplate implementation, and automatically respawns workers after they die. kamisama also lets you implement a promise based shutdown function to ensure each worker shuts down gracefully (i.e. [finish http requests](https://nodejs.org/api/net.html#net_server_close_callback), [close database connections](https://redis.io/commands/quit), etc.)
+Since Node is single threaded, it doesn't automatically take advantage of a multi-core CPU. Clustering allows your app to spawn worker processes each running their own thread on a core, while all sharing the same server port. Node intelligently distributes new connections across the workers in a round-robin fashion, ensuring work load is balanced. kamisama abstracts this boilerplate implementation, and automatically respawns workers if they crash. kamisama also lets you implement a promise based shutdown function to ensure each worker shuts down gracefully (i.e. [finish http requests](https://nodejs.org/api/net.html#net_server_close_callback), [close database connections](https://redis.io/commands/quit), etc.)
 
-`index.js/ts`
+**index.js/ts**
 
 ```javascript
 kamisama({
-	workers: 3,
-	run: id => {
-		console.log(`running worker ${id}`)
-	},
-	shutdown: async (id, signal) => {
-		console.log(`worker ${id} shutting down from ${signal}`)
-	},
-	timeout: 5000
+    workers: 3,
+    run: id => {
+        console.log(`running worker ${id}`)
+    },
+    shutdown: async (id, signal) => {
+        console.log(`worker ${id} shutting down from ${signal}`)
+    },
+    timeout: 5000
 })
 ```
 
-`console`
+**console**
 
 ```bash
 $ node index.js
@@ -51,7 +51,7 @@ You can pass kamisama a run function if you want to create as many workers as ar
 
 ```javascript
 kamisama(id => {
-	console.log(`running worker ${id}`)
+    console.log(`running worker ${id}`)
 })
 ```
 
@@ -86,7 +86,7 @@ kamisama({
 -   kamisama also lets you gracefully shutdown workers when nodemon restarts your app on a file change. Although this can be useful to ensure development and production environments behave the same, it may speed your workflow to disable this. Simply add a conditional for the `SIGUSR2` signal like so:
 
 ```javascript
-;(id, signal) => {
+(id, signal) => {
 	if (signal === "SIGUSR2") return
 }
 ```
