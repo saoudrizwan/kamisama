@@ -127,7 +127,7 @@ kamisama({
 
 ## License
 
-kamisama uses the MIT license. Please file an issue if you have any questions or if you'd like to share how you're using kamisama.
+kamisama uses the [MIT license](https://github.com/saoudrizwan/kamisama/blob/master/LICENSE). Please file an issue if you have any questions or if you'd like to share how you're using kamisama.
 
 ## Questions?
 
