@@ -1,24 +1,34 @@
 {
 	"name": "kamisama",
 	"version": "1.0.0",
-	"description": "",
-	"main": "index.js",
+	"description": "Cluster with automatic respawn and graceful shutdown",
+	"keywords": [
+		"cluster",
+		"worker",
+		"fork",
+		"child",
+		"process",
+		"respawn",
+		"graceful",
+		"shutdown",
+		"promise",
+		"throng"
+	],
+	"author": {
+		"name": "Saoud Rizwan",
+		"email": "hello@saoudmr.com",
+		"url": "https://saoudmr.com"
+	},
+	"license": "MIT",
+	"repository": "saoudrizwan/kamisama",
+	"bugs": "https://github.com/saoudrizwan/kamisama/issues",
+	"homepage": "https://github.com/saoudrizwan/kamisama",
+	"main": "lib/index.js",
+	"types": "lib/index.d.ts",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
 		"build": "tsc",
 		"prepare": "tsc"
 	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/saoudrizwan/kamisama.git"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
-	"bugs": {
-		"url": "https://github.com/saoudrizwan/kamisama/issues"
-	},
-	"homepage": "https://github.com/saoudrizwan/kamisama#readme",
 	"devDependencies": {
 		"@types/node": "^12.0.10",
 		"typescript": "^3.5.2"
