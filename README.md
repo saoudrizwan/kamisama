@@ -115,7 +115,7 @@ kamisama({
 **`SIGHUP`**
 
 -   Usually generated when the console window is closed
--   On Windows Node.js will be unconditionally terminated about 10 seconds later
+-   On Windows Node will be unconditionally terminated about 10 seconds later
 
 **`SIGBREAK`**
 
