@@ -49,7 +49,7 @@ npm i kamisama
 
 ## Usage
 
-You can pass kamisama a run function if you want to create as many workers as are CPU cores on your machine.
+You can pass kamisama a run function if you want to create as many workers as there are CPU cores on your machine.
 
 ```javascript
 kamisama(id => {
