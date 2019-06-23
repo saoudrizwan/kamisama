@@ -1,9 +1,11 @@
 <div align="center">
-	<img src="Stuff/AppIcon-readme.png" width="200" height="200">
+	<img src="https://user-images.githubusercontent.com/7799382/59981707-a0cef080-95d5-11e9-863a-c48dbfdd4d84.png" >
 	<h1>kamisama</h1>
-	<p>
-		<b>Cluster with automatic respawn and graceful shutdown</b>
-	</p>
+	<p align="center">
+    <a href="#installation">Installation</a>
+  • <a href="#usage">Usage</a>
+  • <a href="#license">License</a>
+</p>
 </div>
 
 Since Node is single threaded, it doesn't automatically take advantage of a multi-core CPU. Clustering allows your app to spawn worker processes each running their own thread on a core, while all sharing the same server port. Node intelligently distributes new connections across the workers in a round-robin fashion, ensuring work load is balanced. kamisama abstracts this boilerplate implementation, and automatically respawns workers if they crash. kamisama also lets you implement a promise based shutdown function to ensure each worker shuts down gracefully (i.e. [finish http requests](https://nodejs.org/api/net.html#net_server_close_callback), [close database connections](https://redis.io/commands/quit), etc.)
@@ -98,7 +100,7 @@ kamisama({
 -   How long to wait (milliseconds) until kamisama should forcefully shutdown worker processes after the shutdown function is called.
 -   Default value: `10_000` (10 seconds)
 
-## What signals does `kamisama` listen to?
+### What signals does `kamisama` listen to?
 
 **`SIGINT`**
 
