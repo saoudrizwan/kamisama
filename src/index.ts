@@ -1,4 +1,4 @@
-import * as cluster from "cluster"
+import cluster from "cluster"
 import { cpus } from "os"
 
 export interface RunFunction {
