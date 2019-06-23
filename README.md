@@ -100,7 +100,7 @@ kamisama({
 -   How long to wait (milliseconds) until kamisama should forcefully shutdown worker processes after the shutdown function is called.
 -   Default value: `10_000` (10 seconds)
 
-## What signals does `kamisama` listen to?
+### What signals does `kamisama` listen to?
 
 **`SIGINT`**
 
