@@ -1,5 +1,5 @@
 <div align="center">
-	<img src="Stuff/AppIcon-readme.png" width="200" height="200">
+	<img src="https://user-images.githubusercontent.com/7799382/59981707-a0cef080-95d5-11e9-863a-c48dbfdd4d84.png" >
 	<h1>kamisama</h1>
 	<p>
 		<b>Cluster with automatic respawn and graceful shutdown</b>
