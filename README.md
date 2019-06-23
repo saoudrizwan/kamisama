@@ -73,6 +73,7 @@ kamisama({
 `workers?: number`
 
 -   The number of worker processes to fork for the cluster.
+-   [Heroku provides an appropriate value](https://devcenter.heroku.com/articles/node-concurrency#enabling-concurrency-in-your-app) for this based on your dyno type `process.env.WEB_CONCURRENCY`
 -   Default value: `os.cpus().length` (# of cores on machine's CPU)
 
 `run: (id: number): void`
