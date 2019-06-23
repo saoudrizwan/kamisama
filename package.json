@@ -1,6 +1,6 @@
 {
 	"name": "kamisama",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "Cluster with automatic respawn and graceful shutdown",
 	"keywords": [
 		"cluster",
