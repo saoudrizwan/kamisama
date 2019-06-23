@@ -82,7 +82,7 @@ export default function kamisama(options: KamisamaOptions | RunFunction) {
 
 	shutdownSignals.forEach(signal => process.on(signal, () => shutdownWorkers(signal)))
 
-	function shutdownWorkers(signal: string) {
+	function shutdownWorkers(signal: ShutdownSignal) {
 		if (!isRunning) return
 		isRunning = false
 		const workers = Object.keys(cluster.workers).map(e => cluster.workers[e]) as cluster.Worker[]
