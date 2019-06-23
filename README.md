@@ -89,6 +89,7 @@ kamisama({
 ```javascript
 (id, signal) => {
     if (signal === "SIGUSR2") return
+    // ...
 }
 ```
 
