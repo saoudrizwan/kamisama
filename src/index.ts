@@ -1,5 +1,4 @@
 import * as cluster from "cluster"
-import { EventEmitter } from "events"
 import { cpus } from "os"
 
 interface RunFunction {
@@ -24,10 +23,8 @@ export default function kamisama(options: KamisamaOptions | RunFunction) {
 		"run" in options ||
 		"shutdown" in options
 	) {
-		console.log("Options passed")
 		compiledOptions = options
 	} else {
-		console.log("No options passed, using run function")
 		const run = options as RunFunction
 		compiledOptions = { run }
 	}
@@ -73,35 +70,27 @@ export default function kamisama(options: KamisamaOptions | RunFunction) {
 
 		let isShuttingDown = false
 		process.on("message", function(message) {
-			console.log(`message: ${JSON.stringify(message)}`)
 			switch (message.type) {
 				case MessageType.shutdown:
 					const signal = message.signal as string
-					console.log("worker received shutdown message w signal: ", signal)
 					if (!isShuttingDown) {
 						isShuttingDown = true
 						if (shutdown != null) {
 							Promise.resolve(shutdown(cluster.worker.id, signal))
 								.then(() => {
-									console.log("Shutting down after executing shutdown function")
 									process.exit(0) // success
 								})
 								.catch(error => {
-									console.error(error)
 									process.exit(1) // failure
 								})
 						} else {
-							console.log("Shutting down without shutdown function")
 							process.exit(0)
 						}
 					}
 					break
 				case MessageType.forceShutdown:
-					console.log("Timeout reached, force shutting down!")
 					process.exit(1)
 					break
-				default:
-					console.log("worker received unknown message")
 			}
 		})
 		run(cluster.worker.id)
@@ -116,15 +105,12 @@ export default function kamisama(options: KamisamaOptions | RunFunction) {
 
 	// listen
 	cluster.on("exit", (worker, code, signal) => {
-		console.log(`worker ${worker.process.pid} died`)
 		//revive
 		if (running) cluster.fork()
 	})
 
 	function shutdownWorkers(signal: string) {
-		console.log(`shutdownWorkers(${signal})`)
 		if (!running) {
-			console.log("Received signal to shutdown workers again", signal)
 			return
 		}
 		// shutdown
@@ -145,7 +131,6 @@ export default function kamisama(options: KamisamaOptions | RunFunction) {
 
 	// fork
 	for (let i = 0; i < workers; i++) {
-		console.log("Forking worker")
 		cluster.fork()
 	}
 }
