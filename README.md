@@ -80,7 +80,8 @@ kamisama({
 
 `shutdown?: (id: number, signal: "SIGINT" | "SIGTERM" | "SIGHUP" | "SIGBREAK" | "SIGUSR2"): any`
 
--   Function called when the master process receives one of the common [shutdown signals]().
+-   Function called when the master process receives one of the common [shutdown signals](#what-signals-does-kamisama-listen-to).
+-   Under the hood kamisama calls `Promise.resolve(shutdown(id, signal))`, so you can use `async`/`await` to shutdown asynchronously.
 -   This is where you would [gracefully shutdown](https://hackernoon.com/graceful-shutdown-in-nodejs-2f8f59d1c357) your worker process. This is good practice for web servers, otherwise users' requests would get dropped, database updates would be aborted, and the list goes on.
 -   While it's normal practice to use a listener for shutdown signals (i.e. `process.on("SIGINT", shutdown)`) clustering can send duplicate signals, or even more when npm or nodemon are used to run the process. kamisama takes care of this issue and ensures your shutdown function gets called for each worker only once per termination.
 -   kamisama also lets you gracefully shutdown workers when nodemon restarts your app on a file change. Although this can be useful to ensure development and production environments behave the same, it may speed your workflow to disable this. Simply add a conditional for the `SIGUSR2` signal like so:
