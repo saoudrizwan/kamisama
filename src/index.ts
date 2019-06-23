@@ -1,13 +1,17 @@
 import * as cluster from "cluster"
 import { cpus } from "os"
 
-interface RunFunction {
+export interface RunFunction {
 	(id: number): void
 }
-interface ShutdownFunction {
-	(id: number, signal: string): any
+
+export type ShutdownSignal = "SIGINT" | "SIGTERM" | "SIGHUP" | "SIGBREAK" | "SIGUSR2"
+
+export interface ShutdownFunction {
+	(id: number, signal: ShutdownSignal): any
 }
-interface KamisamaOptions {
+
+export interface KamisamaOptions {
 	workers?: number
 	run: RunFunction
 	shutdown?: ShutdownFunction
@@ -16,13 +20,7 @@ interface KamisamaOptions {
 
 export default function kamisama(options: KamisamaOptions | RunFunction) {
 	let compiledOptions: KamisamaOptions
-	if (
-		"workers" in options ||
-		"lifetime" in options ||
-		"timeout" in options ||
-		"run" in options ||
-		"shutdown" in options
-	) {
+	if ("workers" in options || "run" in options || "shutdown" in options || "timeout" in options) {
 		compiledOptions = options
 	} else {
 		const run = options as RunFunction
@@ -34,53 +32,26 @@ export default function kamisama(options: KamisamaOptions | RunFunction) {
 		shutdown = "kamisama-shutdown",
 		forceShutdown = "kamisama-force-shutdown"
 	}
-	/*
-	Common shutdown signals
-
-	'SIGINT'
-	- Triggered by CTRL + C in Terminal
-	- If a listener is installed, its default behavior will be removed (Node.js will no longer exit).
-
-	'SIGTERM'
-	- If a listener is installed, its default behavior will be removed (Node.js will no longer exit).
-	- Not supported on Windows
-
-	'SIGHUP'
-	- Usually generated when the console window is closed
-	- If a listener is installed, its default behavior will be removed (Node.js will no longer exit).
-	- On Windows Node.js will be unconditionally terminated about 10 seconds later
-
-	'SIGBREAK'
-	- delivered on Windows when <Ctrl>+<Break> is pressed
-
-	'SIGUSR2'
-	- Sent by nodemon when a file has been updated
-	- If you listen to this signal, then you must kill the process yourself for nodemon to assume control and restart the application
-	*/
-	type ShutdownSignal = "SIGINT" | "SIGTERM" | "SIGHUP" | "SIGBREAK" | "SIGUSR2"
 	const shutdownSignals: ShutdownSignal[] = ["SIGINT", "SIGTERM", "SIGHUP", "SIGBREAK", "SIGUSR2"]
 
 	if (cluster.isWorker) {
-		// Create the child process
-
 		// listening to these signals will replace Node's default handlers where the process exits immediately
-		shutdownSignals.forEach(signal =>
-			process.on(signal, () => console.log(`worker ${cluster.worker.id} received ${signal}`))
-		)
+		shutdownSignals.forEach(signal => process.on(signal, () => {}))
 
 		let isShuttingDown = false
 		process.on("message", function(message) {
 			switch (message.type) {
 				case MessageType.shutdown:
-					const signal = message.signal as string
 					if (!isShuttingDown) {
 						isShuttingDown = true
 						if (shutdown != null) {
-							Promise.resolve(shutdown(cluster.worker.id, signal))
+							// Promise.resolve can take a value or Promise. If given a Promise, that promise is returned
+							Promise.resolve(shutdown(cluster.worker.id, message.signal))
 								.then(() => {
 									process.exit(0) // success
 								})
 								.catch(error => {
+									console.error(error)
 									process.exit(1) // failure
 								})
 						} else {
@@ -93,43 +64,36 @@ export default function kamisama(options: KamisamaOptions | RunFunction) {
 					break
 			}
 		})
+
 		run(cluster.worker.id)
+
 		return
 	}
 
 	// This is the master process
-	// cpus().length
-	let { workers = 2, timeout = 5000 } = compiledOptions
 
-	let running = true
+	let { workers = cpus().length, timeout = 10_000 } = compiledOptions
+	let isRunning = true
 
-	// listen
-	cluster.on("exit", (worker, code, signal) => {
-		//revive
-		if (running) cluster.fork()
+	cluster.on("exit", () => {
+		// revive worker after it died
+		if (isRunning) cluster.fork()
 	})
-
-	function shutdownWorkers(signal: string) {
-		if (!running) {
-			return
-		}
-		// shutdown
-		running = false
-		const workers = Object.keys(cluster.workers).map(e => cluster.workers[e])
-		//workers.forEach(e => e && e.process.kill())
-		workers.forEach(e => e && e.send({ type: MessageType.shutdown, signal }))
-
-		// forcekill
-		setTimeout(() => {
-			workers.forEach(e => e && e.send({ type: MessageType.forceShutdown }))
-		}, timeout).unref()
-	}
 
 	shutdownSignals.forEach(signal => process.on(signal, () => shutdownWorkers(signal)))
 
-	// masterfn
+	function shutdownWorkers(signal: string) {
+		if (!isRunning) return
+		isRunning = false
+		const workers = Object.keys(cluster.workers).map(e => cluster.workers[e]) as cluster.Worker[]
+		// graceful shutdown
+		workers.forEach(worker => worker.send({ type: MessageType.shutdown, signal }))
+		// force shutdown when timeout is reached
+		setTimeout(() => {
+			workers.forEach(worker => worker.send({ type: MessageType.forceShutdown }))
+		}, timeout).unref() // unref will not require the Node.js event loop to remain active
+	}
 
-	// fork
 	for (let i = 0; i < workers; i++) {
 		cluster.fork()
 	}
