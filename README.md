@@ -102,6 +102,16 @@ kamisama({
 -   How long to wait (milliseconds) until kamisama should forcefully shutdown worker processes after the shutdown function is called.
 -   Default value: `10_000` (10 seconds)
 
+### Master process
+
+kamisama only exposes functions to run in worker processes for the sake of simplicity. If you want to run code in the master process, use the `cluster` module in the same file you use kamisama. (Remember kamisama is just a function that runs in the master process.)
+
+```javascript
+if (cluster.isMaster) {
+    console.log(`Master process id: ${process.pid}`)
+}
+```
+
 ### What signals does kamisama listen to?
 
 **`SIGINT`**
