@@ -87,7 +87,7 @@ kamisama({
             await database.connect()
         } catch (error) {
             await logger.error(error)
-            process.exit(1) // since we're handling the error in the worker, we're responsible for ending the process
+            process.exit(1) // this way you're responsible for exiting
         }
     }
     ```
