@@ -154,7 +154,7 @@ if (cluster.isMaster) {
 
 **`unhandledRejection`**
 
--   Emitted when a promise throws an error that is not caught and handled, possible hanging an http request or halting expected execution, putting your application in an unexpected state.
+-   Emitted when a promise throws an error that is not caught, possibly hanging an http request or halting expected execution, putting your application in an unexpected state.
 -   Normally this doesn't crash the process like `uncaughtException`, but Node promises that in future versions this will change. It is best to treat this event like an `uncaughtException`, restarting your server with kamisama and logging the error to to prevent this from happening again.
 -   For example, you can inspect the unhandled rejection's reason and promise and send it off to a service like Sentry before shutting down gracefully
     ```javascript
