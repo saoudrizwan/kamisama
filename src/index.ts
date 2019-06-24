@@ -54,14 +54,17 @@ export default function kamisama(options: KamisamaOptions | RunFunction) {
 								})
 								.catch(error => {
 									console.error(error)
+									process.send!({ type: MessageType.workerDidShutdown })
 									process.exit(1) // failure
 								})
 						} else {
+							process.send!({ type: MessageType.workerDidShutdown })
 							process.exit(0)
 						}
 					}
 					break
 				case MessageType.forceShutdown:
+					process.send!({ type: MessageType.workerDidShutdown })
 					process.exit(1)
 					break
 			}
@@ -103,7 +106,7 @@ export default function kamisama(options: KamisamaOptions | RunFunction) {
 			if (message.type === MessageType.workerDidShutdown) {
 				shutdownWorkersCount += 1
 				if (shutdownWorkersCount === workers) {
-					process.nextTick(() => process.exit(0))
+					process.exit(0)
 				}
 			}
 		})
