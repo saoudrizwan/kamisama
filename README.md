@@ -84,7 +84,7 @@ kamisama({
 `shutdown?: (id: number, signal: "SIGINT" | "SIGTERM" | "SIGHUP" | "SIGBREAK" | "SIGUSR2"): any`
 
 -   Function called when the master process receives one of the common [shutdown signals](#what-signals-does-kamisama-listen-to).
--   You must not attach listeners to these shutdown signals in your worker process if you want kamisama's listeners to call your shutdown function.
+-   You must not attach listeners to these shutdown signals in your worker process if you want kamisama's listeners to call your shutdown function. (However you *should* attach listeners to [process-specific signals](#what-signals-should-you-listen-to) that can help you debug errors in your app.)
 -   Under the hood kamisama calls `Promise.resolve(shutdown(id, signal))`, so you can use `async`/`await` to shutdown asynchronously.
 -   This is where you would [gracefully shutdown](https://hackernoon.com/graceful-shutdown-in-nodejs-2f8f59d1c357) your worker process. This is good practice for web servers, otherwise users' requests would get dropped, database updates would be aborted, and the list goes on.
 -   While it's normal practice to use a listener for shutdown signals (i.e. `process.on("SIGINT", shutdown)`) clustering can send duplicate signals, or even more when npm or nodemon are used to run the process. kamisama takes care of this issue and ensures your shutdown function gets called for each worker only once.
@@ -135,6 +135,21 @@ if (cluster.isMaster) {
 **`SIGUSR2`**
 
 -   [Sent by nodemon](https://github.com/remy/nodemon#controlling-shutdown-of-your-script) when a file has been updated
+
+### What signals should you listen to?
+
+**`uncaughtException`**
+
+-   Emitted when your app throws an unhandled error, inherently meaning your application is in an undefined state.
+-   You *could* ignore this message and resume function, but it is recommended to call your graceful shutdown function and let kamisama respawn the worker with a fresh slate.
+-   For example, you can log the error from the event during shutdown: `process.on("uncaughtException", error => shutdown(id, "uncaughtException", error))`
+-   If you're using an error tracking service, you should override its shutdown function with your graceful shutdown implementation (i.e. Sentry's [`OnUncaughtException` integration](https://github.com/getsentry/sentry-docs/blob/master/src/collections/_documentation/platforms/node/default-integrations.md#onuncaughtexception))
+
+**`unhandledRejection`**
+
+-   Emitted when a promise throws an error that is not caught and handled, possible hanging an http request or halting expected execution, putting your application in an unexpected state.
+-   Normally this doesn't crash the process like `uncaughtException`, but Node promises that in future versions this will change. It is best to treat this event like an `uncaughtException`, restarting your server with kamisama and logging the error to to prevent this from happening again.
+-   For example, you can get the stack trace of the unhandled promise: `process.on("unhandledRejection", reason => shutdown(id, "unhandledRejection", reason))`
 
 ## License
 
