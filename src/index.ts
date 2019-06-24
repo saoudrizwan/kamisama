@@ -2,7 +2,7 @@ import * as cluster from "cluster"
 import { cpus } from "os"
 
 export interface RunFunction {
-	(id: number): void
+	(id: number): any
 }
 
 export type ShutdownSignal = "SIGINT" | "SIGTERM" | "SIGHUP" | "SIGBREAK" | "SIGUSR2"
