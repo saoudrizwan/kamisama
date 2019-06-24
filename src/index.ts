@@ -28,9 +28,9 @@ export default function kamisama(options: KamisamaOptions | RunFunction) {
 	}
 
 	let { run, shutdown } = compiledOptions
+
 	enum MessageType {
 		shutdown = "kamisama-shutdown",
-		workerDidShutdown = "kamisama-worker-did-shutdown",
 		forceShutdown = "kamisama-force-shutdown"
 	}
 	const shutdownSignals: ShutdownSignal[] = ["SIGINT", "SIGTERM", "SIGHUP", "SIGBREAK", "SIGUSR2"]
@@ -49,22 +49,18 @@ export default function kamisama(options: KamisamaOptions | RunFunction) {
 							// Promise.resolve can take a value or Promise. If given a Promise, that promise is returned
 							Promise.resolve(shutdown(cluster.worker.id, message.signal))
 								.then(() => {
-									process.send!({ type: MessageType.workerDidShutdown })
 									process.exit(0) // success
 								})
 								.catch(error => {
 									console.error(error)
-									process.send!({ type: MessageType.workerDidShutdown })
 									process.exit(1) // failure
 								})
 						} else {
-							process.send!({ type: MessageType.workerDidShutdown })
 							process.exit(0)
 						}
 					}
 					break
 				case MessageType.forceShutdown:
-					process.send!({ type: MessageType.workerDidShutdown })
 					process.exit(1)
 					break
 			}
@@ -78,37 +74,56 @@ export default function kamisama(options: KamisamaOptions | RunFunction) {
 	// This is the master process
 
 	let { workers = cpus().length, timeout = 10_000 } = compiledOptions
-	let isRunning = true
 
-	cluster.on("exit", () => {
-		// revive worker after it died
-		if (isRunning) cluster.fork()
-	})
+	let runningWorkers = 0
+	let shutdownSignal: ShutdownSignal | undefined
+	let isShuttingDown = false
+	let isForceShuttingDown = false
 
-	shutdownSignals.forEach(signal => process.on(signal, () => shutdownWorkers(signal)))
-
-	function shutdownWorkers(signal: ShutdownSignal) {
-		if (!isRunning) return
-		isRunning = false
-		const workers = Object.keys(cluster.workers).map(e => cluster.workers[e]) as cluster.Worker[]
-		// graceful shutdown
-		workers.forEach(worker => worker.send({ type: MessageType.shutdown, signal }))
-		// force shutdown when timeout is reached
-		setTimeout(() => {
-			workers.forEach(worker => worker.send({ type: MessageType.forceShutdown }))
-		}, timeout).unref() // unref will not require the Node.js event loop to remain active
-	}
-
-	let shutdownWorkersCount = 0
-	for (let i = 0; i < workers; i++) {
-		const worker = cluster.fork()
-		worker.on("message", function(message) {
-			if (message.type === MessageType.workerDidShutdown) {
-				shutdownWorkersCount += 1
-				if (shutdownWorkersCount === workers) {
+	cluster
+		.on("online", worker => {
+			runningWorkers++
+			if (isShuttingDown) {
+				// worker came online during a shutdown, kill it immediately
+				if (isForceShuttingDown) {
+					worker.send({ type: MessageType.forceShutdown })
+				} else {
+					worker.send({ type: MessageType.shutdown, signal: shutdownSignal })
+				}
+			}
+		})
+		.on("exit", () => {
+			runningWorkers--
+			if (!isShuttingDown) {
+				// revive worker after it died
+				cluster.fork()
+			} else {
+				// if shutting down then exit after last worker died
+				if (runningWorkers <= 0) {
 					process.exit(0)
 				}
 			}
 		})
+
+	shutdownSignals.forEach(signal => process.on(signal, () => shutdownWorkers(signal)))
+	function shutdownWorkers(signal: ShutdownSignal) {
+		if (isShuttingDown) return
+		isShuttingDown = true
+		shutdownSignal = signal
+		// graceful shutdown
+		Object.keys(cluster.workers)
+			.map(e => cluster.workers[e]!)
+			.forEach(worker => worker.send({ type: MessageType.shutdown, signal }))
+		// force shutdown when timeout is reached
+		setTimeout(() => {
+			isForceShuttingDown = true
+			Object.keys(cluster.workers)
+				.map(e => cluster.workers[e]!)
+				.forEach(worker => worker.send({ type: MessageType.forceShutdown }))
+		}, timeout).unref() // unref will not require the Node.js event loop to remain active
+	}
+
+	for (let i = 0; i < workers; i++) {
+		cluster.fork()
 	}
 }
