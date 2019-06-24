@@ -142,7 +142,7 @@ if (cluster.isMaster) {
 
 -   Emitted when your app throws an unhandled error, inherently meaning your application is in an undefined state.
 -   You *could* ignore this message and resume function, but it is recommended to call your graceful shutdown function and let kamisama respawn the worker with a fresh slate.
--   For example, you can log the error from the event before shutting down (you must exit the process yourself, so kamisama can respawn it)
+-   For example, you can log the error from the event before shutting down (you must exit the process yourself, so kamisama can respawn it).
     ```javascript
     process.on("uncaughtException", async error => {
         // log error information...
@@ -156,7 +156,7 @@ if (cluster.isMaster) {
 
 -   Emitted when a promise throws an error that is not caught, possibly hanging an http request or halting expected execution, putting your application in an unexpected state.
 -   Normally this doesn't crash the process like `uncaughtException`, but Node promises that in future versions this will change. It is best to treat this event like an `uncaughtException`, restarting your server with kamisama and logging the error to to prevent this from happening again.
--   For example, you can inspect the unhandled rejection's reason and promise and send it off to a service like Sentry before shutting down gracefully
+-   For example, you can inspect the unhandled rejection's reason and promise and send it off to a service like Sentry before shutting down gracefully.
     ```javascript
     process.on("unhandledRejection", async (reason, promise) => {
         // send information to logger or error tracking service like Sentry...
