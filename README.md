@@ -16,10 +16,12 @@ Since Node is single threaded, it doesn't automatically take advantage of a mult
 kamisama({
     workers: 3,
     run: async id => {
-        console.log(`running worker ${id}`)
+		console.log(`running worker ${id}`)
+		// connect to database, start server, etc.
     },
     shutdown: async (id, signal) => {
-        console.log(`worker ${id} shutting down from ${signal}`)
+		console.log(`worker ${id} shutting down from ${signal}`)
+		// finish http requests, close database connection, etc.
     },
     timeout: 5000
 })
