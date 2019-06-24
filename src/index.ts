@@ -30,6 +30,7 @@ export default function kamisama(options: KamisamaOptions | RunFunction) {
 	let { run, shutdown } = compiledOptions
 	enum MessageType {
 		shutdown = "kamisama-shutdown",
+		workerDidShutdown = "kamisama-worker-did-shutdown",
 		forceShutdown = "kamisama-force-shutdown"
 	}
 	const shutdownSignals: ShutdownSignal[] = ["SIGINT", "SIGTERM", "SIGHUP", "SIGBREAK", "SIGUSR2"]
@@ -48,6 +49,7 @@ export default function kamisama(options: KamisamaOptions | RunFunction) {
 							// Promise.resolve can take a value or Promise. If given a Promise, that promise is returned
 							Promise.resolve(shutdown(cluster.worker.id, message.signal))
 								.then(() => {
+									process.send!({ type: MessageType.workerDidShutdown })
 									process.exit(0) // success
 								})
 								.catch(error => {
@@ -94,7 +96,16 @@ export default function kamisama(options: KamisamaOptions | RunFunction) {
 		}, timeout).unref() // unref will not require the Node.js event loop to remain active
 	}
 
+	let shutdownWorkersCount = 0
 	for (let i = 0; i < workers; i++) {
-		cluster.fork()
+		const worker = cluster.fork()
+		worker.on("message", function(message) {
+			if (message.type === MessageType.workerDidShutdown) {
+				shutdownWorkersCount += 1
+				if (shutdownWorkersCount === workers) {
+					process.nextTick(() => process.exit(0))
+				}
+			}
+		})
 	}
 }
