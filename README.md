@@ -142,14 +142,28 @@ if (cluster.isMaster) {
 
 -   Emitted when your app throws an unhandled error, inherently meaning your application is in an undefined state.
 -   You *could* ignore this message and resume function, but it is recommended to call your graceful shutdown function and let kamisama respawn the worker with a fresh slate.
--   For example, you can log the error from the event during shutdown: `process.on("uncaughtException", error => shutdown(id, "uncaughtException", error))`
--   If you're using an error tracking service, you should override its shutdown function with your graceful shutdown implementation (i.e. Sentry's [`OnUncaughtException` integration](https://github.com/getsentry/sentry-docs/blob/master/src/collections/_documentation/platforms/node/default-integrations.md#onuncaughtexception))
+-   For example, you can log the error from the event before shutting down (you must exit the process yourself, so kamisama can respawn it)
+    ```javascript
+    process.on("uncaughtException", async error => {
+        // log error information...
+        await shutdown(id, "uncaughtException")
+        process.exit()
+    })
+    ```
+-   If you're using an error tracking service, you may be able to override its shutdown function with your own graceful shutdown (i.e. Sentry's [`OnUncaughtException` integration](https://github.com/getsentry/sentry-docs/blob/master/src/collections/_documentation/platforms/node/default-integrations.md#onuncaughtexception))
 
 **`unhandledRejection`**
 
 -   Emitted when a promise throws an error that is not caught and handled, possible hanging an http request or halting expected execution, putting your application in an unexpected state.
 -   Normally this doesn't crash the process like `uncaughtException`, but Node promises that in future versions this will change. It is best to treat this event like an `uncaughtException`, restarting your server with kamisama and logging the error to to prevent this from happening again.
--   For example, you can get the stack trace of the unhandled promise: `process.on("unhandledRejection", reason => shutdown(id, "unhandledRejection", reason))`
+-   For example, you can inspect the unhandled rejection's reason and promise and send it off to a service like Sentry before shutting down gracefully
+    ```javascript
+    process.on("unhandledRejection", async (reason, promise) => {
+        // send information to logger or error tracking service like Sentry...
+        await shutdown(id, "unhandledRejection")
+        process.exit()
+    })
+    ```
 
 ## License
 
