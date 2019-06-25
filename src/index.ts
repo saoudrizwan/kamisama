@@ -66,14 +66,10 @@ export default function kamisama(options: KamisamaOptions | RunFunction) {
 			}
 		})
 
-		Promise.resolve(run(cluster.worker.id))
-			.then(() => {
-				process.exit(0)
-			})
-			.catch(error => {
-				console.error(error)
-				process.exit(1)
-			})
+		Promise.resolve(run(cluster.worker.id)).catch(error => {
+			console.error(error)
+			process.exit(1)
+		})
 
 		return
 	}
