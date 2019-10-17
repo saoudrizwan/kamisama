@@ -8,6 +8,9 @@
 </p>
 </div>
 
+[![GitRoyalty](https://img.shields.io/endpoint?url=https://gitroyalty.com/saoudrizwan/kamisama/badge.json)](https://gitroyalty.com/saoudrizwan/kamisama)
+
+
 Since Node is single threaded, it doesn't automatically take advantage of a multi-core CPU. Clustering allows your app to spawn worker processes each running their own thread on a core, while all sharing the same server port. Node intelligently distributes new connections across the workers in a round-robin fashion, ensuring work load is balanced. kamisama abstracts this boilerplate implementation, and automatically respawns workers if they crash. kamisama also lets you implement a promise based shutdown function to ensure each worker shuts down gracefully (i.e. [finish http requests](https://nodejs.org/api/net.html#net_server_close_callback), [close database connections](https://redis.io/commands/quit), etc.)
 
 **index.js/ts**
@@ -45,9 +48,11 @@ worker 3 shutting down from SIGINT
 
 ## Installation
 
-```
-npm i kamisama
-```
+Support kamisama's contributors with a monthly subscription on https://gitroyalty.com/saoudrizwan/kamisama to install this package.
+
+[![Subscribe on GitRoyalty](https://gitroyalty.com/saoudrizwan/kamisama/subscribe.svg)](https://gitroyalty.com/saoudrizwan/kamisama)
+<br/>
+<sub>* comes with a 2 week free trial and can be cancelled anytime</sub>
 
 ## Usage
 
