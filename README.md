@@ -189,7 +189,7 @@ kamisama uses the [MIT license](https://github.com/saoudrizwan/kamisama/blob/mas
 
 ## Questions?
 
-Contact me by email <a href="mailto:hello@saoudmr.com">hello@saoudmr.com</a>, or by twitter <a href="https://twitter.com/sdrzn" target="_blank">@sdrzn</a>. Please create an <a href="https://github.com/saoudrizwan/kamisama/issues">issue</a> if you come across a bug or would like a feature to be added.
+Contact me by email <a href="mailto:hello@saoudmr.com">hello@saoudmr.com</a>, or by Twitter <a href="https://twitter.com/sdrzn" target="_blank">@sdrzn</a>. Please create an <a href="https://github.com/saoudrizwan/kamisama/issues">issue</a> if you come across a bug or would like a feature to be added.
 
 ## Notable Mentions
 
